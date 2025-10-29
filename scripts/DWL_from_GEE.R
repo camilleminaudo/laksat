@@ -1,4 +1,8 @@
+# LAKSAT project
+# Camille
 
+# Description
+# this scripts loads GEE outputs and calcualte color indices
 
 
 rm(list = ls()) # clear workspace
@@ -16,7 +20,6 @@ library(sf)
 library(data.table)
 library(readxl)
 library(colorscience)
-
 
 
 # -------------------  functions ------------------- 
@@ -254,18 +257,40 @@ get_color_metrics <- function(table, satellite){
 
 
 setwd("C:/Users/Camille Minaudo/OneDrive - Universitat de Barcelona/Documentos/PROJECTS/LAKeSAT/gee_outputs")
-mytable_l7 <- as.data.frame(fread("pts2Asset_PNAP_L7.csv"))
-# mytable_l7 <- mytable_l7[!duplicated(paste0(mytable_l7$ID,mytable_l7$date)),]
-mytable_l8 <- as.data.frame(fread("pts2Asset_PNAP_L8.csv"))
-# mytable_l8 <- mytable_l8[!duplicated(paste0(mytable_l8$ID,mytable_l8$date)),]
-mytable_s2 <- as.data.frame(fread("pts2Asset_PNAP_S2.csv"))
+mytable_l5 <- as.data.frame(fread("Rw_PYR_L5.csv"))
+mytable_l7 <- as.data.frame(fread("Rw_PYR_L7.csv"))
+mytable_l8 <- as.data.frame(fread("Rw_PYR_L8.csv"))
+mytable_l9 <- as.data.frame(fread("Rw_PYR_L9.csv"))
+mytable_s2 <- as.data.frame(fread("Rw_PYR_S2.csv"))
 
 
 # -------------------  Extract water colour ------------------- 
 
+
+df_color_l5 <- get_color_metrics(table = mytable_l5, satellite = "LANDSAT_5")
+# ggplot(df_color_l5, aes(date, dwl ))+geom_point()
+
 df_color_l7 <- get_color_metrics(table = mytable_l7, satellite = "LANDSAT_7")
 
 df_color_l8 <- get_color_metrics(table = mytable_l8, satellite = "LANDSAT_8")
+
+df_color_l9 <- get_color_metrics(table = mytable_l9, satellite = "LANDSAT_9")
+
+df_color_s2 <- get_color_metrics(table = mytable_s2, satellite = "SENTINEL_2")
+
+# save tables
+setwd("C:/Projects/myGit/laksat/results")
+write.csv(df_color_l5, file = "color_landsat5.csv")
+write.csv(df_color_l7, file = "color_landsat7.csv")
+write.csv(df_color_l8, file = "color_landsat8.csv")
+write.csv(df_color_l9, file = "color_landsat9.csv")
+write.csv(df_color_s2, file = "color_sentinel2.csv")
+
+
+
+
+
+
 
 # apply calibration factors to Landsat8
 # https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023WR036926
