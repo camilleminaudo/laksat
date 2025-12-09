@@ -77,10 +77,16 @@ get_aggregated_stats <- function(df_color, sat_code){
                                   lake_size_ha = color_id$SIZE_HA[1],
                                   wrt_months = color_id$WRT_MONTHS[1],
                                   n_summer = dim(color_id)[1],
+                                  blue_med = median(color_id$blue),
+                                  blue_sd = sd(color_id$blue),
+                                  green_med = median(color_id$green),
+                                  green_sd = sd(color_id$green),
+                                  red_med = median(color_id$red),
+                                  red_sd = sd(color_id$red),
                                   dwl_med = median(color_id$dwl),
                                   dwl_sd = sd(color_id$dwl),
-                                  s_star_med = median(color_id$dwl),
-                                  s_star_sd = sd(color_id$dwl),
+                                  s_star_med = median(color_id$s_star),
+                                  s_star_sd = sd(color_id$s_star),
                                   trend_type = trend_type,
                                   sens_slope = mysens_slope$estimates,
                                   sens_slope.Z = mysens_slope$statistic))
@@ -89,14 +95,9 @@ get_aggregated_stats <- function(df_color, sat_code){
   return(df_lake)
 }
 
+# ---------------- load and process data -----------------------
 
-
-
-
-
-# --------- Load datasets --------- 
 setwd("C:/Projects/myGit/laksat/results")
-
 
 
 # ---------------- landsat 5 -----------------------
@@ -123,13 +124,24 @@ trends_l7 <- get_aggregated_stats(df_color = color_l7, sat_code = "L7")
 
 ggplot(trends_l7, aes(dwl_med))+geom_density()+theme_article()+ggtitle("LANDSAT 7, June-October")
 
+ggplot(trends_l7)+geom_histogram(aes(trend_type, fill = trend_type), stat = 'count')+
+  theme_article()+
+  xlab("Trend type")+
+  scale_fill_manual(values = c("darkblue","red","grey"))+ggtitle("LANDSAT 7 (1999-2023)")
+
+
+ggplot(trends_l7, aes(dwl_med, fill = trend_type))+geom_density(alpha=0.5)+theme_article()+ggtitle("LANDSAT 7, June-October")+
+  scale_fill_manual(values = c("darkblue","red","grey"))
+
+
+
 ggplot(trends_l7, aes(dwl_med, elevation_masl, colour = trend_type))+geom_point(size=3, alpha=0.6)+theme_article()+ggtitle("LANDSAT 7, June-October")+
   scale_colour_manual(values = c("darkblue","red","grey"))+ggtitle("LANDSAT 7, June-October")
 
 ggplot(trends_l7, aes(dwl_med, dwl_sd, colour = trend_type))+geom_point(size=3, alpha=0.6)+theme_article()+
   scale_colour_manual(values = c("darkblue","red","grey"))+ggtitle("LANDSAT 7, June-October")
 
-table(df_lake$trend_type)
+table(trends_l7$trend_type)
 
 
 
@@ -211,26 +223,73 @@ ggplot(trends_s2, aes(dwl_med, elevation_masl, colour = trend_type))+geom_point(
 
 df_all <- rbind(trends_l5, trends_l7, trends_l8, trends_l9, trends_s2)
 
-ggplot(df_all, aes(dwl_med, fill = satellite))+geom_density(alpha=0.5)+theme_article()
+ggplot(df_all, aes(dwl_med, fill = satellite))+geom_density(alpha=0.5)+theme_article()+
+  ggtitle("ALL SATELLITES, June-October")+facet_wrap(satellite~.)
 
-ggplot(df_all, aes(s_star_med, fill = satellite))+geom_density(alpha=0.5)+theme_article()
+ggplot(df_all, aes(s_star_med, fill = satellite))+geom_density(alpha=0.5)+theme_article()+
+  ggtitle("ALL SATELLITES, June-October")+facet_wrap(satellite~.)
 
 ggplot(df_all, aes(dwl_med, dwl_sd, colour = satellite))+geom_point(size=3, alpha=0.6)+theme_article()+
   ggtitle("ALL SATELLITES, June-October")+facet_wrap(satellite~.)
 
-
-ggplot(df_all, aes(ID, dwl_med, colour = satellite))+geom_point(size=3, alpha=0.6)+theme_article()+
-  ggtitle("ALL SATELLITES, June-October")
+ggplot(df_all, aes(dwl_med, s_star_med, colour = satellite))+geom_point(size=3, alpha=0.6)+theme_article()+
+  ggtitle("ALL SATELLITES, June-October")#+facet_wrap(satellite~.)
 
 
 df_all_sprd_dwl_med <- spread(df_all[,c("ID","satellite","dwl_med")], satellite, dwl_med)
 
 ggplot(df_all_sprd_dwl_med, aes(L5, L7))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_dwl_med, aes(L5, L8))+geom_point()+theme_article()+geom_abline(slope=1)
 ggplot(df_all_sprd_dwl_med, aes(L7, L8))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_dwl_med, aes(L7, L9))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_dwl_med, aes(L7, s2))+geom_point()+theme_article()+geom_abline(slope=1)
 ggplot(df_all_sprd_dwl_med, aes(L8, L9))+geom_point()+theme_article()+geom_abline(slope=1)
 ggplot(df_all_sprd_dwl_med, aes(L8, s2))+geom_point()+theme_article()+geom_abline(slope=1)
 ggplot(df_all_sprd_dwl_med, aes(L9, s2))+geom_point()+theme_article()+geom_abline(slope=1)
-ggplot(df_all_sprd_dwl_med, aes(L7, s2))+geom_point()+theme_article()+geom_abline(slope=1)
+
+
+
+
+
+df_all_sprd_blue_med <- spread(df_all[,c("ID","satellite","blue_med")], satellite, blue_med)
+
+ggplot(df_all_sprd_blue_med, aes(L5, L7))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_blue_med, aes(L7, L8))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_blue_med, aes(L7, L8))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_blue_med, aes(L7, L9))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_blue_med, aes(L7, s2))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_blue_med, aes(L8, L9))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_blue_med, aes(L8, s2))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_blue_med, aes(L9, s2))+geom_point()+theme_article()+geom_abline(slope=1)
+
+
+
+
+df_all_sprd_green_med <- spread(df_all[,c("ID","satellite","green_med")], satellite, green_med)
+
+ggplot(df_all_sprd_green_med, aes(L5, L7))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_green_med, aes(L7, L8))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_green_med, aes(L7, L8))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_green_med, aes(L7, L9))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_green_med, aes(L7, s2))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_green_med, aes(L8, L9))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_green_med, aes(L8, s2))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_green_med, aes(L9, s2))+geom_point()+theme_article()+geom_abline(slope=1)
+
+
+
+df_all_sprd_red_med <- spread(df_all[,c("ID","satellite","red_med")], satellite, red_med)
+
+ggplot(df_all_sprd_red_med, aes(L5, L7))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_red_med, aes(L7, L8))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_red_med, aes(L7, L8))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_red_med, aes(L7, L9))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_red_med, aes(L7, s2))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_red_med, aes(L8, L9))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_red_med, aes(L8, s2))+geom_point()+theme_article()+geom_abline(slope=1)
+ggplot(df_all_sprd_red_med, aes(L9, s2))+geom_point()+theme_article()+geom_abline(slope=1)
+
+
 
 
 

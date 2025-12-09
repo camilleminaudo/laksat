@@ -264,6 +264,33 @@ mytable_l9 <- as.data.frame(fread("Rw_PYR_L9.csv"))
 mytable_s2 <- as.data.frame(fread("Rw_PYR_S2.csv"))
 
 
+
+# list of all dates available
+mytable_all <- rbind(mytable_l5[,c("ID","LAKECODEME","date","satellite")],
+                     mytable_l7[,c("ID","LAKECODEME","date","satellite")],
+                     mytable_l8[,c("ID","LAKECODEME","date","satellite")],
+                     mytable_l9[,c("ID","LAKECODEME","date","satellite")],
+                     mytable_s2[,c("ID","LAKECODEME","date","satellite")])
+
+setwd("C:/Projects/myGit/laksat/results")
+write.csv(mytable_all, file = "dates_satellite_database_PYR.csv")
+
+mytable_all <- read.csv("dates_satellite_database_PYR.csv")
+
+ggplot(mytable_all, aes(year(date), fill = satellite))+geom_histogram(stat="count")+
+  theme_article()+ylab("Number of observation")+
+  scale_fill_discrete(palette = scales::pal_brewer(palette = "Dark2"))+
+  xlab("")+theme(legend.position = c(0.2,0.8))
+
+
+
+n_obs_all <- as.data.frame(table(mytable_all$date))
+n_obs_all$date <- as.Date(n_obs_all$Var1)
+ggplot(n_obs_all)+geom_segment(aes(x=date, y=0, yend = Freq))+theme_article()+ylab("Number of observation")
+
+ggplot(mytable_all, aes(date))+geom_density()+theme_article()
+
+
 # -------------------  Extract water colour ------------------- 
 
 
